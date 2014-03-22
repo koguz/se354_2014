@@ -7,31 +7,53 @@ public class Level : MonoBehaviour {
 	public string LevelFileName = "Level00.txt";
 	public Transform kamera;
 	private Kamera kameraScript;
-	public List<GameObject> players;
+	public List<GameObject> redPlayers;
+	public List<GameObject> bluePlayers;
 	GameObject[] ps;
 	private int sure;
 	private int spidx;
 	private float kameraSure;
 	private int kameraIdx;
-	int[,] map;
-	List<Vector3> playerSpawns;
+	private Vector3 redFlagPoint;
+	private Vector3 blueFlagPoint;
+	string[,] map;
+	List<Vector3> redPlayerSpawns;
+	List<Vector3> bluePlayerSpawns;
 	List<Spawn> itemSpawns;
 	List<Spawn> weaponSpawns;
+	Material redMaterial;
+	Material blueMaterial;
+	GameObject redFlag;
+	GameObject blueFlag;
 	int size = 0;
+	int redPoints = 0;
+	int bluePoints = 0;
 	/* Level File
 	 * 0 -> empty
 	 * 1 -> wall
 	 * 2 -> machine gun spawn point
 	 * 3 -> health kit spawn point
-	 * 4 -> player spawn point
+	 * 4 -> UNUSED - player spawn point
 	 * 5 -> water
 	 * 6 -> armour spawn point
 	 * 7 -> doomsday spawn point
 	 * 8 -> hex damage spawn point
 	 * 9 -> grenade spawn point
+	 * r-> redflag
+	 * b -> blueflag
+	 * k -> redplayers
+	 * m	 -> blueplayers
 	 */
 	// Use this for initialization
 	void Start () {
+		redMaterial = (Material) Resources.Load ("Red", typeof(Material));
+		blueMaterial = (Material) Resources.Load ("Blue", typeof(Material));
+		redFlag = (GameObject) GameObject.Instantiate(Resources.Load ("Flag"));
+		blueFlag = (GameObject) GameObject.Instantiate(Resources.Load ("Flag"));
+		redFlag.transform.FindChild("Flag").renderer.material = redMaterial;
+		blueFlag.transform.FindChild("Flag").renderer.material = blueMaterial;
+		redFlag.GetComponent<Flag>().team = "Red";
+		blueFlag.GetComponent<Flag>().team = "Blue";
 		spidx = 0;
 		kameraSure = Time.time;
 		kameraIdx = 0;
@@ -68,8 +90,12 @@ public class Level : MonoBehaviour {
 		
 		for(int i=0;i<ps.Length;i++) {
 			if(!ps[i].activeSelf && 
-			   (Time.time - ps[i].GetComponent<AIScript>().getDisTime()) > 5) {
-				ps[i].transform.position = playerSpawns[spidx%playerSpawns.Count];
+			   (Time.time - ps[i].GetComponent<AIScript>().getDisTime()) > 2) {
+				if(ps[i].GetComponent<AIScript>().team == "Red") {
+					ps[i].transform.position = redPlayerSpawns[spidx%redPlayerSpawns.Count];
+				} else if(ps[i].GetComponent<AIScript>().team == "Blue") {
+					ps[i].transform.position = bluePlayerSpawns[spidx%bluePlayerSpawns.Count];
+				}
 				ps[i].GetComponent<AIScript>().ClearValues();
 				ps[i].SetActive(true);
 				spidx++;
@@ -84,27 +110,41 @@ public class Level : MonoBehaviour {
 	}
 	
 	void OnGUI() {
-		string display = "";
+		string display = "Red Team: " + redPoints + " \n" + "Blue Team: " + bluePoints + "\n";
+		/*
 		for(int i=0;i<ps.Length;i++) {
 			AIScript temp = ps[i].GetComponent<AIScript>();
-			display += temp.playername + " (" + temp.getHealth() + ", " + temp.getArmour() + "): " + temp.getPuan() + "\n";
-		}
+			display += temp.playername + "(Team: " + temp.team + ", " + temp.getHealth() + ", " + temp.getArmour() + "): " + temp.getPuan() + "\n";
+		}*/
 		display += "Time: " + (sure-Time.time) + "\n";
-		display += "Camera is following: " + ps[kameraIdx].GetComponent<AIScript>().playername;
-		GUI.Label(new Rect(5, 5, 200, 400), display);
+		display += "Camera is following: " + ps[kameraIdx].GetComponent<AIScript>().playername + ", Team " + ps[kameraIdx].GetComponent<AIScript>().team;
+		GUI.Label(new Rect(5, 5, 400, 400), display);
 	}
 	
-	public int[,] getMap() { return map; }
+	public string[,] getMap() { return map; }
 	
 	void LoadPlayers() {
-		if(players.Count > playerSpawns.Count) {
-			Debug.LogError("More players than spawn points :(");
+		if(redPlayers.Count > redPlayerSpawns.Count) {
+			Debug.LogError("More red players than spawn points :(");
 			return;
 		}
-		for(int i=0;i<players.Count;i++) {
-			GameObject player = (GameObject) Instantiate(players[i], playerSpawns[i], Quaternion.identity);
+		if(bluePlayers.Count > bluePlayerSpawns.Count) {
+			Debug.LogError("More blue players than spawn points :(");
+			return;
+		}
+		for(int i=0;i<redPlayers.Count;i++) {
+			GameObject player = (GameObject) Instantiate(redPlayers[i], redPlayerSpawns[i], Quaternion.identity);
+			player.GetComponent<AIScript>().team = "Red";
+			player.GetComponent<AIScript>().playername = "Red " + (i+1);
+			player.transform.FindChild("Govde").renderer.material = redMaterial;
 			player.tag = "Player";
-			//player.GetComponent<AITankScript>().playername = "Player" + i;
+		}
+		for(int i=0;i<bluePlayers.Count;i++) {
+			GameObject player = (GameObject) Instantiate(bluePlayers[i], bluePlayerSpawns[i], Quaternion.identity);
+			player.GetComponent<AIScript>().team = "Blue";
+			player.GetComponent<AIScript>().playername = "Blue " + (i+1);
+			player.transform.FindChild("Govde").renderer.material = blueMaterial;
+			player.tag = "Player";
 		}
 	}
 	
@@ -114,26 +154,28 @@ public class Level : MonoBehaviour {
 		dosya.Close();
 		string[] satirlar = icerik.Split("\n"[0]);
 		size = satirlar.Length;
-		map = new int[size, size];
+		map = new string[size, size];
 		Material zemin = (Material) Resources.Load ("Floor", typeof(Material));
 		Material duvar = (Material) Resources.Load ("Duvar", typeof(Material));
 		Material su    = (Material) Resources.Load ("Su", typeof(Material));
-		playerSpawns = new List<Vector3>();
+		redPlayerSpawns = new List<Vector3>();
+		bluePlayerSpawns = new List<Vector3>();
 		itemSpawns   = new List<Spawn>();
 		weaponSpawns = new List<Spawn>();
 		
 		for(int i=0;i<size;i++) {
 			string[] hucreler = satirlar[i].Split(" "[0]);
 			for(int j=0;j<size;j++) {
-				int.TryParse(hucreler[j], out map[i, j]); 
+				map[i, j] = hucreler[j].Trim();
+				//int.TryParse(hucreler[j], out map[i, j]); 
 				GameObject kare = GameObject.CreatePrimitive(PrimitiveType.Cube);
 				kare.transform.position = new Vector3(i, -0.04f, j);
 				kare.transform.localScale = new Vector3(1.0f, 0.01f, 1.0f);
 				kare.renderer.material = zemin;
 				switch(map[i, j]) {
-				case 0:
+				case "0":
 					break;
-				case 1:
+				case "1":
 					kare.transform.localScale = new Vector3(1.0f, 1.4f, 1.0f);
 					kare.renderer.material = duvar;
 					GameObject t1 = new GameObject("walltrigger");
@@ -144,16 +186,16 @@ public class Level : MonoBehaviour {
 					t1.layer = 11;
 					t1.AddComponent(typeof(Obstacle));
 					break;
-				case 2:
+				case "2":
 					weaponSpawns.Add(new HeavyMachineGun(new Vector3(i, 0, j)));
 					break;
-				case 3:
+				case "3":
 					itemSpawns.Add (new HealthKit(new Vector3(i, 0, j)));
 					break;
-				case 4:
-					playerSpawns.Add(new Vector3(i, 0, j));
+				case "4":
+					//playerSpawns.Add(new Vector3(i, 0, j));
 					break;
-				case 5:
+				case "5":
 					kare.renderer.material = su;
 					kare.AddComponent(typeof(WaterSimple));
 					
@@ -172,17 +214,31 @@ public class Level : MonoBehaviour {
 					t2.layer = 11;
 					t2.AddComponent(typeof(Obstacle));
 					break;
-				case 6:
+				case "6":
 					itemSpawns.Add (new Armour(new Vector3(i, 0, j)));
 					break;
-				case 7:
+				case "7":
 					weaponSpawns.Add (new Doomsday(new Vector3(i, 0, j)));
 					break;
-				case 8:
+				case "8":
 					itemSpawns.Add (new HexDamage(new Vector3(i, 0, j)));
 					break;
-				case 9:
+				case "9":
 					weaponSpawns.Add (new Grenade(new Vector3(i, 0, j)));
+					break;
+				case "r":
+					redFlagPoint = new Vector3(i, 0, j);
+					redFlag.transform.position = redFlagPoint;
+					break;
+				case "b":
+					blueFlagPoint = new Vector3(i, 0, j);
+					blueFlag.transform.position = blueFlagPoint;
+					break;
+				case "k":
+					redPlayerSpawns.Add(new Vector3(i, 0, j));
+					break;
+				case "m":
+					bluePlayerSpawns.Add(new Vector3(i, 0, j));
 					break;
 				}
 			}

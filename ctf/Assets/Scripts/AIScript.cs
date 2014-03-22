@@ -12,6 +12,7 @@ public class AIScript : MonoBehaviour {
 	private int damageMult;
 	
 	public string playername;
+	public string team;
 	
 	private List<Weapon> weapons;
 	private int currentWeapon;
