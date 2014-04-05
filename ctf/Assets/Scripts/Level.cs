@@ -14,8 +14,8 @@ public class Level : MonoBehaviour {
 	private int spidx;
 	private float kameraSure;
 	private int kameraIdx;
-	private Vector3 redFlagPoint;
-	private Vector3 blueFlagPoint;
+	public Vector3 redFlagPoint;
+	public Vector3 blueFlagPoint;
 	string[,] map;
 	List<Vector3> redPlayerSpawns;
 	List<Vector3> bluePlayerSpawns;
@@ -26,8 +26,8 @@ public class Level : MonoBehaviour {
 	GameObject redFlag;
 	GameObject blueFlag;
 	int size = 0;
-	int redPoints = 0;
-	int bluePoints = 0;
+	public int redPoints = 0;
+	public int bluePoints = 0;
 	/* Level File
 	 * 0 -> empty
 	 * 1 -> wall
@@ -50,8 +50,8 @@ public class Level : MonoBehaviour {
 		blueMaterial = (Material) Resources.Load ("Blue", typeof(Material));
 		redFlag = (GameObject) GameObject.Instantiate(Resources.Load ("Flag"));
 		blueFlag = (GameObject) GameObject.Instantiate(Resources.Load ("Flag"));
-		redFlag.transform.FindChild("Flag").renderer.material = redMaterial;
-		blueFlag.transform.FindChild("Flag").renderer.material = blueMaterial;
+		redFlag.transform.FindChild("Bez").renderer.material = redMaterial;
+		blueFlag.transform.FindChild("Bez").renderer.material = blueMaterial;
 		redFlag.GetComponent<Flag>().team = "Red";
 		blueFlag.GetComponent<Flag>().team = "Blue";
 		spidx = 0;

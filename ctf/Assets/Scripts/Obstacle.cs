@@ -15,8 +15,8 @@ public class Obstacle : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider other) {
 		if(other.gameObject.layer == 10) {
-			AIScript tank = other.GetComponent<AIScript>();
-			tank.hitObstacle();
+			AIScript player = other.GetComponent<AIScript>();
+			player.hitObstacle();
 		}
 	}
 }

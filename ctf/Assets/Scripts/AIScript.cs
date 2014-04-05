@@ -10,6 +10,9 @@ public class AIScript : MonoBehaviour {
 	private bool died;
 	private float hexTime;
 	private int damageMult;
+	public bool hasFlag = false;
+	private bool dieNextFrame = false;
+	private Level level;
 	
 	public string playername;
 	public string team;
@@ -24,6 +27,7 @@ public class AIScript : MonoBehaviour {
 		currentWeapon = 0;
 		damageMult = 1;
 		died = false;
+		level = GameObject.Find ("Level").GetComponent<Level>();
 	}
 	
 	public int getHealth() { return health; }
@@ -70,6 +74,22 @@ public class AIScript : MonoBehaviour {
 			weapons.Add(weapon);
 		}
 	}
+
+	public void touchFlag(GameObject f) {
+		if(f.GetComponent<Flag>().team == team) {
+			// return flag to original position
+			if(team == "Red") {
+				f.transform.position = level.redFlagPoint;
+			} else if (team == "Blue") {
+				f.transform.position = level.blueFlagPoint;
+			}
+		} else {
+			// pick up the flag
+			hasFlag = true;
+			f.transform.parent = transform;
+			f.transform.position = transform.position;
+		}
+	}
 	
 	public List<Weapon> getWeapons() { 
 		return weapons; 
@@ -98,6 +118,10 @@ public class AIScript : MonoBehaviour {
 	}
 	
 	private void kill() {
+		if(hasFlag) {
+			transform.Find("Flag(Clone)").parent = null; // CLONE!! bir saatimi yedi.
+			hasFlag = false;
+		}
 		disabledTime = Time.time;
 		gameObject.SetActive(false);
 		died = true;

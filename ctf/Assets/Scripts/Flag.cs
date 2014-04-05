@@ -12,4 +12,11 @@ public class Flag : MonoBehaviour {
 	void Update () {
 		transform.Rotate(0, 90*Time.deltaTime, 0);
 	}
+
+	void OnTriggerEnter(Collider other) {
+		if(other.gameObject.layer == 10) {
+			// this is a player
+			other.gameObject.GetComponent<AIScript>().touchFlag(gameObject);
+		}
+	}
 }
