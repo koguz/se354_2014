@@ -7,11 +7,11 @@ public class AIScript : MonoBehaviour {
 	private int armour = 50;
 	private int puan = 0;
 	private float disabledTime;
-	private bool died;
+	private float flagTime;
+	// private bool died;
 	private float hexTime;
 	private int damageMult;
 	public bool hasFlag = false;
-	private bool dieNextFrame = false;
 	private Level level;
 	
 	public string playername;
@@ -26,7 +26,7 @@ public class AIScript : MonoBehaviour {
 		weapons.Add(new Weapon()); // default is machine gun
 		currentWeapon = 0;
 		damageMult = 1;
-		died = false;
+		//died = false;
 		level = GameObject.Find ("Level").GetComponent<Level>();
 	}
 	
@@ -48,6 +48,10 @@ public class AIScript : MonoBehaviour {
 	void Update () {
 		if(damageMult > 1 && (Time.time - hexTime > 10)) {
 			damageMult = 1; 
+		}
+		if(hasFlag && (Time.time - flagTime > 1)) {
+			increasePoints(1);
+			flagTime = Time.time;
 		}
 	}
 	
@@ -80,14 +84,18 @@ public class AIScript : MonoBehaviour {
 			// return flag to original position
 			if(team == "Red") {
 				f.transform.position = level.redFlagPoint;
+				increasePoints(Mathf.FloorToInt((level.redFlagPoint - transform.position).magnitude));
 			} else if (team == "Blue") {
 				f.transform.position = level.blueFlagPoint;
+				increasePoints(Mathf.FloorToInt((level.blueFlagPoint - transform.position).magnitude));
 			}
 		} else {
 			// pick up the flag
 			hasFlag = true;
 			f.transform.parent = transform;
 			f.transform.position = transform.position;
+			increasePoints(50);
+			flagTime = Time.time;
 		}
 	}
 	
@@ -109,12 +117,12 @@ public class AIScript : MonoBehaviour {
 		health -= damageCaused; 
 		armour -= damage;
 		if(armour < 0) armour = 0;
-		int multiplier = 1;
+		int bonus = 0;
 		if(health <= 0) {
 			kill ();
-			multiplier = 2;
+			bonus = 50;
 		} 
-		return damageCaused * multiplier;
+		return damageCaused + bonus;
 	}
 	
 	private void kill() {
@@ -124,13 +132,14 @@ public class AIScript : MonoBehaviour {
 		}
 		disabledTime = Time.time;
 		gameObject.SetActive(false);
-		died = true;
+		//died = true;
 		Debug.Log ("killed");
 	}
 	
 	public void hitObstacle() {
 		kill ();
-		puan -= puan/2;
+		//puan -= puan/2;
+		increasePoints(-50);
 	}
 	
 	public void increasePoints(int p) {
@@ -157,6 +166,7 @@ public class AIScript : MonoBehaviour {
 		}
 	}
 
+	/*
 	public bool wasItDead() { 
 		if(died) { 
 			died = false; 
@@ -164,12 +174,13 @@ public class AIScript : MonoBehaviour {
 		} else {
 			return false;
 		}
-	}
+	}*/
 	
 	void OnCollisionEnter(Collision collision) {
 		if (collision.collider.gameObject.layer == 10) {
 			kill ();
-			puan = puan/2;
+			// puan = puan/2;
+			increasePoints(-50);
 		}
 	}
 	

@@ -104,12 +104,24 @@ public class Level : MonoBehaviour {
 	}
 	
 	void nextPlayer() {
+		if(ps[kameraIdx].GetComponent<AIScript>().playername == "CONTROL") return;
 		kameraIdx = (kameraIdx + 1) % ps.Length;
 		kameraScript.player = ps[kameraIdx].transform;
 		kameraSure = Time.time;
 	}
 	
 	void OnGUI() {
+		redPoints = 0; bluePoints = 0;
+		/*for(int i=0;i<redPlayers.Count;i++) redPoints += redPlayers[i].GetComponent<AIScript>().getPuan();
+		for(int i=0;i<bluePlayers.Count;i++) bluePoints += bluePlayers[i].GetComponent<AIScript>().getPuan();*/
+		for(int i=0;i<ps.Length;i++) {
+			if(ps[i].GetComponent<AIScript>().team == "Red") {
+				redPoints += ps[i].GetComponent<AIScript>().getPuan();
+			}
+			if(ps[i].GetComponent<AIScript>().team == "Blue") {
+				bluePoints += ps[i].GetComponent<AIScript>().getPuan();
+			}
+		}
 		string display = "Red Team: " + redPoints + " \n" + "Blue Team: " + bluePoints + "\n";
 		/*
 		for(int i=0;i<ps.Length;i++) {

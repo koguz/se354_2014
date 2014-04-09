@@ -7,7 +7,6 @@ public class Bullet : MonoBehaviour {
 	public int damage;
 	// Use this for initialization
 	void Start () {
-	
 	}
 	
 	// Update is called once per frame
@@ -16,10 +15,15 @@ public class Bullet : MonoBehaviour {
 	}
 	
 	void OnTriggerEnter(Collider other) {
-		Destroy(gameObject);
+  		Destroy(gameObject);
 		if(other.gameObject.layer == 10) {
 			AIScript enemy = other.GetComponent<AIScript>();
-			parent.increasePoints(enemy.takeAHit(damage));
+			// Turn off friendly fire
+			if(parent.team != enemy.team) {
+				parent.increasePoints(enemy.takeAHit(damage));
+			} else {
+				Debug.Log ("same team!! watch your fire!!");
+			}
 		}
 	}
 }
