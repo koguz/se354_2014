@@ -241,10 +241,12 @@ public class Level : MonoBehaviour {
 				case "r":
 					redFlagPoint = new Vector3(i, 0, j);
 					redFlag.transform.position = redFlagPoint;
+					redFlag.GetComponent<Flag>().originalPosition = redFlagPoint;
 					break;
 				case "b":
 					blueFlagPoint = new Vector3(i, 0, j);
 					blueFlag.transform.position = blueFlagPoint;
+					blueFlag.GetComponent<Flag>().originalPosition = blueFlagPoint;
 					break;
 				case "k":
 					redPlayerSpawns.Add(new Vector3(i, 0, j));

@@ -3,6 +3,7 @@ using System.Collections;
 
 public class Flag : MonoBehaviour {
 	public string team;
+	public Vector3 originalPosition;
 	// Use this for initialization
 	void Start () {
 	

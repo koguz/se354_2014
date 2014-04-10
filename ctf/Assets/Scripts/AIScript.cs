@@ -8,7 +8,6 @@ public class AIScript : MonoBehaviour {
 	private int puan = 0;
 	private float disabledTime;
 	private float flagTime;
-	// private bool died;
 	private float hexTime;
 	private int damageMult;
 	public bool hasFlag = false;
@@ -26,7 +25,6 @@ public class AIScript : MonoBehaviour {
 		weapons.Add(new Weapon()); // default is machine gun
 		currentWeapon = 0;
 		damageMult = 1;
-		//died = false;
 		level = GameObject.Find ("Level").GetComponent<Level>();
 	}
 	
@@ -52,6 +50,19 @@ public class AIScript : MonoBehaviour {
 		if(hasFlag && (Time.time - flagTime > 1)) {
 			increasePoints(1);
 			flagTime = Time.time;
+		}
+		if(hasFlag) {
+			if (
+				(team == "Red" && (transform.position - level.redFlagPoint).magnitude < 1) ||
+				(team == "Blue" && (transform.position - level.blueFlagPoint).magnitude < 1)
+			) {
+				// drop flag, add points and send the flag to original position
+				hasFlag = false;
+				Transform flag = transform.Find("Flag(Clone)");
+				flag.parent = null;
+				flag.position = flag.GetComponent<Flag>().originalPosition;
+				increasePoints(500); // Score!
+			}
 		}
 	}
 	
@@ -82,13 +93,8 @@ public class AIScript : MonoBehaviour {
 	public void touchFlag(GameObject f) {
 		if(f.GetComponent<Flag>().team == team) {
 			// return flag to original position
-			if(team == "Red") {
-				f.transform.position = level.redFlagPoint;
-				increasePoints(Mathf.FloorToInt((level.redFlagPoint - transform.position).magnitude));
-			} else if (team == "Blue") {
-				f.transform.position = level.blueFlagPoint;
-				increasePoints(Mathf.FloorToInt((level.blueFlagPoint - transform.position).magnitude));
-			}
+			f.transform.position = f.GetComponent<Flag>().originalPosition;
+			increasePoints(Mathf.FloorToInt((f.GetComponent<Flag>().originalPosition - transform.position).magnitude));
 		} else {
 			// pick up the flag
 			hasFlag = true;
@@ -165,21 +171,10 @@ public class AIScript : MonoBehaviour {
 			weapons[currentWeapon].ammoCount--;
 		}
 	}
-
-	/*
-	public bool wasItDead() { 
-		if(died) { 
-			died = false; 
-			return true; 
-		} else {
-			return false;
-		}
-	}*/
 	
 	void OnCollisionEnter(Collision collision) {
 		if (collision.collider.gameObject.layer == 10) {
 			kill ();
-			// puan = puan/2;
 			increasePoints(-50);
 		}
 	}
