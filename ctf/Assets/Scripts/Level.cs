@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Generic; 
 using System.IO;
 
 public class Level : MonoBehaviour {
@@ -12,8 +12,10 @@ public class Level : MonoBehaviour {
 	GameObject[] ps;
 	private int sure;
 	private int spidx;
-	private float kameraSure;
+	private float kameraSure; 
 	private int kameraIdx;
+	private bool  redFlagLost = false;
+	private bool blueFlagLost = false;
 	public Vector3 redFlagPoint;
 	public Vector3 blueFlagPoint;
 	string[,] map;
@@ -108,6 +110,16 @@ public class Level : MonoBehaviour {
 		kameraIdx = (kameraIdx + 1) % ps.Length;
 		kameraScript.player = ps[kameraIdx].transform;
 		kameraSure = Time.time;
+	}
+
+	public void flagUpdate(string team, bool stat) {
+		if(team == "Red") redFlagLost = stat;
+		else if(team == "Blue") blueFlagLost = stat;
+	}
+
+	public bool getFlagLost(string team) {
+		if(team == "Red") return redFlagLost;
+		else return blueFlagLost;
 	}
 	
 	void OnGUI() {

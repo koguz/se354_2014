@@ -53,8 +53,8 @@ public class AIScript : MonoBehaviour {
 		}
 		if(hasFlag) {
 			if (
-				(team == "Red" && (transform.position - level.redFlagPoint).magnitude < 1) ||
-				(team == "Blue" && (transform.position - level.blueFlagPoint).magnitude < 1)
+				(team == "Red" && !level.getFlagLost("Red") && (transform.position - level.redFlagPoint).magnitude < 1) ||
+				(team == "Blue" && !level.getFlagLost("Blue") && (transform.position - level.blueFlagPoint).magnitude < 1)
 			) {
 				// drop flag, add points and send the flag to original position
 				hasFlag = false;
@@ -94,7 +94,8 @@ public class AIScript : MonoBehaviour {
 		if(f.GetComponent<Flag>().team == team) {
 			// return flag to original position
 			f.transform.position = f.GetComponent<Flag>().originalPosition;
-			increasePoints(Mathf.FloorToInt((f.GetComponent<Flag>().originalPosition - transform.position).magnitude));
+			increasePoints(Mathf.FloorToInt((f.GetComponent<Flag>().originalPosition - transform.position).magnitude)); 
+			level.flagUpdate(team, false);
 		} else {
 			// pick up the flag
 			hasFlag = true;
@@ -102,6 +103,7 @@ public class AIScript : MonoBehaviour {
 			f.transform.position = transform.position;
 			increasePoints(50);
 			flagTime = Time.time;
+			level.flagUpdate(f.GetComponent<Flag>().team, true);
 		}
 	}
 	
