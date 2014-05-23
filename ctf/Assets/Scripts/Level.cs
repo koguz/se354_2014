@@ -94,8 +94,14 @@ public class Level : MonoBehaviour {
 			if(!ps[i].activeSelf && 
 			   (Time.time - ps[i].GetComponent<AIScript>().getDisTime()) > 2) {
 				if(ps[i].GetComponent<AIScript>().team == "Red") {
+					while(!isSpawnPointAvailable(redPlayerSpawns[spidx%redPlayerSpawns.Count])) {
+						spidx++;
+					}
 					ps[i].transform.position = redPlayerSpawns[spidx%redPlayerSpawns.Count];
 				} else if(ps[i].GetComponent<AIScript>().team == "Blue") {
+					while(!isSpawnPointAvailable(bluePlayerSpawns[spidx%bluePlayerSpawns.Count])) {
+						spidx++;
+					}
 					ps[i].transform.position = bluePlayerSpawns[spidx%bluePlayerSpawns.Count];
 				}
 				ps[i].GetComponent<AIScript>().ClearValues();
@@ -103,6 +109,15 @@ public class Level : MonoBehaviour {
 				spidx++;
 			} 
 		}
+	}
+
+	bool isSpawnPointAvailable(Vector3 candidate) {
+		for (int i=0; i<ps.Length; i++) {
+			if( (ps[i].transform.position - candidate).magnitude < 1) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	void nextPlayer() {
