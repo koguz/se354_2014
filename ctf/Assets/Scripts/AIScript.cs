@@ -12,6 +12,7 @@ public class AIScript : MonoBehaviour {
 	private int damageMult;
 	public bool hasFlag = false;
 	private Level level;
+	private bool died = false;
 	
 	public string playername;
 	public string team;
@@ -40,10 +41,15 @@ public class AIScript : MonoBehaviour {
 		damageMult = 1;
 		health = 100;
 		armour = 50;
+		died = false;
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if(isDead()) {
+			disabledTime = Time.time;
+			gameObject.SetActive(false);
+		}
 		if(damageMult > 1 && (Time.time - hexTime > 10)) {
 			damageMult = 1; 
 		}
@@ -138,12 +144,16 @@ public class AIScript : MonoBehaviour {
 			transform.Find("Flag(Clone)").parent = null; // CLONE!! bir saatimi yedi.
 			hasFlag = false;
 		}
-		disabledTime = Time.time;
-		gameObject.SetActive(false);
-		//died = true;
+		// disabledTime = Time.time;
+		// gameObject.SetActive(false);
+		died = true;
 		Debug.Log ("killed");
 	}
-	
+
+	public bool isDead() {
+		return died;
+	}
+
 	public void hitObstacle() {
 		kill ();
 		//puan -= puan/2;
